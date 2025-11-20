@@ -157,50 +157,70 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
         <PivotItem headerText="My Approvals" itemKey="approval" />
       </Pivot>
 
-      {/* Table or empty message */}
-      {pagedItems.length > 0 ? (
-        <>
-          <DetailsList
-            items={pagedItems}
-            columns={columns}
-            selectionMode={SelectionMode.none}
-            layoutMode={DetailsListLayoutMode.fixedColumns}
-            isHeaderVisible={true}
-          />
+      {/* Table */}
+      <DetailsList
+        items={pagedItems.length > 0 ? pagedItems : [{} as IRequestItem]} // dummy row if no data
+        columns={columns}
+        selectionMode={SelectionMode.none}
+        layoutMode={DetailsListLayoutMode.fixedColumns}
+        isHeaderVisible={true}
+        onRenderItemColumn={(item, index, column) => {
+          if (!column) return null;
 
-          {/* Pagination */}
-          {data.length > pageSize && (
-            <Stack
-              horizontal
-              tokens={{ childrenGap: 10 }}
-              horizontalAlign="center"
-              style={{ marginTop: 10 }}
-            >
-              <DefaultButton
-                text="Previous"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(currentPage - 1)}
-              />
-              <span>
-                Page {currentPage} of {totalPages}
+          // Show "No data found" if pagedItems is empty
+          if (pagedItems.length === 0) {
+            return column.key === "RequestID" ? (
+              <span style={{ fontStyle: "italic", color: "#666" }}>
+                No data found
               </span>
-              <DefaultButton
-                text="Next"
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(currentPage + 1)}
+            ) : null;
+          }
+
+          const value = item[column.fieldName as keyof IRequestItem];
+
+          // Custom render for Status
+          if (column.key === "Status")
+            return <StatusBadge status={value as string} />;
+
+          // Custom render for Actions
+          if (column.key === "Actions")
+            return (
+              <ActionButton
+                onClick={() =>
+                  window.open(
+                    `${siteUrl}/Lists/Requests/DispForm.aspx?ID=${item.id}`,
+                    "_blank"
+                  )
+                }
               />
-            </Stack>
-          )}
-        </>
-      ) : (
-        <Text
-          variant="large"
-          styles={{
-            root: { textAlign: "center", marginTop: 20, color: "#666" },
-          }}
+            );
+
+          return <span>{value}</span>;
+        }}
+      />
+
+      {/* Pagination */}
+      {data.length > pageSize && (
+        <Stack
+          horizontal
+          tokens={{ childrenGap: 10 }}
+          horizontalAlign="center"
+          style={{ marginTop: 10 }}
         >
-          No data found
-        </Text>
+          <DefaultButton
+            text="Previous"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(currentPage - 1)}
+          />
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <DefaultButton
+            text="Next"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(currentPage + 1)}
+          />
+        </Stack>
       )}
     </Stack>
   );

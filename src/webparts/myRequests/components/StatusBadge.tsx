@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Stack, Text } from "@fluentui/react";
+//import { Stack } from "@fluentui/react";
 
 interface IStatusBadgeProps {
   status: string;
@@ -7,25 +7,37 @@ interface IStatusBadgeProps {
 
 export const StatusBadge: React.FC<IStatusBadgeProps> = ({ status }) => {
   const colorMap: Record<string, string> = {
-    Approved: "#107C10",
+    Submitted: "#605E5C",
     Pending: "#FCE100",
-    Rejected: "#A4262C",
-    InProgress: "#005A9E",
+    Completed: "#107C10",
+    "Pending On Chief Approval": "#005A9E",
+    "Pending On HR Approval": "#0078D4",
+    "Pending On CEO Approval": "#8A8886",
+    Approved: "#107C10",
+    Reject: "#A4262C",
   };
 
   const color = colorMap[status] || "#666";
 
   return (
-    <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 8 }}>
-      <div
-        style={{
-          width: 10,
-          height: 10,
-          borderRadius: "50%",
-          backgroundColor: color,
-        }}
-      />
-      <Text>{status}</Text>
-    </Stack>
+    <div
+      style={{
+        display: "inline-flex",
+        justifyContent: "center",
+        alignItems: "center",
+
+        padding: "6px 12px",
+        minWidth: 80,
+
+        borderRadius: "50px", // full circle/rounded pill
+        backgroundColor: color,
+        color: "#fff",
+        fontWeight: 600,
+        fontSize: 12,
+      }}
+      className="circular-span"
+    >
+      {status}
+    </div>
   );
 };
