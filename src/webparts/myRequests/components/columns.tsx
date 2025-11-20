@@ -31,7 +31,7 @@ export const columns: IColumn[] = [
   },
   {
     key: "AssignedTo",
-    name: "Assigned To",
+    name: "Assigned Approver",
     fieldName: "AssignedTo",
     minWidth: 150,
     maxWidth: 200,
@@ -39,7 +39,7 @@ export const columns: IColumn[] = [
   },
   {
     key: "Created",
-    name: "Created",
+    name: "Creation Date",
     fieldName: "Created",
     minWidth: 150,
     maxWidth: 200,
