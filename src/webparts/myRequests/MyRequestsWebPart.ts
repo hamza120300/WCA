@@ -20,27 +20,19 @@ export interface IMyRequestsWebPartProps {
 }
 
 export default class MyRequestsWebPart extends BaseClientSideWebPart<IMyRequestsWebPartProps> {
-  //private _isDarkTheme: boolean = false;
-  //private _environmentMessage: string = "";
+ 
 
-  // public render(): void {
-  //   const element = React.createElement(MyRequests, {
-  //     spHttpClient: this.context.spHttpClient,
-  //     siteUrl: this.context.pageContext.web.absoluteUrl,
-  //   });
+ public render(): void {
+  const initialTab: "my" | "approval" =
+  this.properties.mode === "approval" ? "approval" : "my";
+  const element = React.createElement(MyRequests, {
+    spHttpClient: this.context.spHttpClient,
+    siteUrl: this.context.pageContext.web.absoluteUrl,
+    defaultMode: initialTab, // pass initial tab
+  });
 
-  //   ReactDom.render(element, this.domElement);
-  // }
-
-  public render(): void {
-    const element = React.createElement(MyRequests, {
-      spHttpClient: this.context.spHttpClient,
-      siteUrl: this.context.pageContext.web.absoluteUrl,
-      mode: this.properties.mode || "my", // pass mode to React
-    });
-
-    ReactDom.render(element, this.domElement);
-  }
+  ReactDom.render(element, this.domElement);
+}
 
   protected onInit(): Promise<void> {
     return this._getEnvironmentMessage().then((message) => {

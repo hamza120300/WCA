@@ -1,24 +1,13 @@
 import * as React from "react";
-import Button from "@mui/material/Button";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import { IconButton, IIconProps } from "@fluentui/react";
 
-// interface IActionButtonProps {
-//   requestId: number | string;
-// }
+interface IActionButtonProps {
+  onClick?: () => void;
+}
 
-const ActionButton: React.FC = () => {
-  const url = `https://ejadasharepoint.sharepoint.com/sites/WCA-DEV`;
+// Use a Fluent UI eye icon
+const viewIcon: IIconProps = { iconName: "View" };
 
-  return (
-    <Button
-      variant="contained"
-      size="small"
-      onClick={() => window.open(url, "_blank")}
-      startIcon={<VisibilityIcon />}
-    >
-      View
-    </Button>
-  );
+export const ActionButton: React.FC<IActionButtonProps> = ({ onClick }) => {
+  return <IconButton iconProps={viewIcon} title="View" onClick={onClick} />;
 };
-
-export default ActionButton;

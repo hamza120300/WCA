@@ -1,21 +1,65 @@
-import { GridColDef } from "@mui/x-data-grid";
 import * as React from "react";
-import ActionButton from "./ActionButton";
+import { IColumn } from "@fluentui/react";
+import { StatusBadge } from "./StatusBadge"; // if you still want a colored circle
+import { ActionButton } from "./ActionButton"; // icon-only button
 
-export const columns: GridColDef[] = [
-  { field: "RequestID", headerName: "Request ID", width: 120 },
-  { field: "ServiceType", headerName: "Service Type", width: 180 },
-  { field: "Status", headerName: "Status", width: 140 },
-  { field: "AssignedTo", headerName: "Assigned To", width: 180 },
-  { field: "Created", headerName: "Created", width: 160 },
-
+export const columns: IColumn[] = [
   {
-    field: "Actions",
-    headerName: "Actions",
-    width: 150,
-    sortable: false,
-    renderCell: (params) => {
-      return <ActionButton />;
-    },
+    key: "RequestID",
+    name: "Request Type",
+    fieldName: "RequestID",
+    minWidth: 100,
+    maxWidth: 150,
+    isResizable: true,
+  },
+  // {
+  //   key: "ServiceType",
+  //   name: "Service Type",
+  //   fieldName: "ServiceType",
+  //   minWidth: 150,
+  //   maxWidth: 200,
+  //   isResizable: true,
+  // },
+  {
+    key: "Status",
+    name: "Status",
+    fieldName: "Status",
+    minWidth: 120,
+    maxWidth: 150,
+    isResizable: true,
+    onRender: (item) => <StatusBadge status={item.Status} />,
+  },
+  {
+    key: "AssignedTo",
+    name: "Assigned To",
+    fieldName: "AssignedTo",
+    minWidth: 150,
+    maxWidth: 200,
+    isResizable: true,
+  },
+  {
+    key: "Created",
+    name: "Created",
+    fieldName: "Created",
+    minWidth: 150,
+    maxWidth: 200,
+    isResizable: true,
+  },
+  {
+    key: "Actions",
+    name: "Actions",
+    minWidth: 80,
+    maxWidth: 100,
+    isResizable: false,
+    onRender: (item) => (
+      <ActionButton
+        onClick={() =>
+          window.open(
+            `https://ejadasharepoint.sharepoint.com/sites/WCA-DEV`,
+            "_blank"
+          )
+        }
+      />
+    ),
   },
 ];
