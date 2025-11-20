@@ -1,0 +1,18 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "nodeVersion": "22.19.0",
+    "sdksVersions": {},
+    "version": "1.21.1",
+    "libraryName": "wca",
+    "libraryId": "46715417-a3e3-41a7-a7f2-744e00805db1",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "WCA",
+    "solutionShortDescription": "WCA description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}
