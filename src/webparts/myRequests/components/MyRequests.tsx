@@ -28,6 +28,7 @@ interface IRequestItem {
   Status: string;
   AssignedTo: string;
   Created: string;
+  AssignedToEmail?: string;
 }
 
 export const MyRequests: React.FC<IMyRequestsProps> = ({
@@ -41,6 +42,9 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
   // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 6;
+
+  const getUserPhoto = (email: string) =>
+    `${siteUrl}/_layouts/15/userphoto.aspx?size=S&accountname=${email}`;
 
   interface IPaginationProps {
     currentPage: number;
@@ -147,10 +151,29 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       key: "AssignedTo",
       name: "Assigned Approver",
       fieldName: "AssignedTo",
-      minWidth: 150,
-      maxWidth: 180,
+      minWidth: 180,
+      maxWidth: 220,
       isResizable: true,
+      onRender: (item: IRequestItem) => {
+        if (!item.AssignedTo) return "-";
+
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <img
+              src={getUserPhoto(item.AssignedToEmail || "")}
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
+                objectFit: "cover",
+              }}
+            />
+            <span style={{ fontSize: 14 }}>{item.AssignedTo}</span>
+          </div>
+        );
+      },
     },
+
     {
       key: "Created",
       name: "Creation Date",
@@ -195,8 +218,8 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
 
       const response = await spHttpClient.get(
         `${siteUrl}/_api/web/lists/getbytitle('Requests')/items` +
-          `?$select=Id,RequestID,Status/Title,AssignedTo/Title,Created` +
-          `&$expand=AssignedTo,Status` +
+          `?$select=Id,RequestID,Status/Title,AssignedTo/Title,AssignedTo/EMail,Created` +
+          `&$expand=AssignedTo,Status,Author` +
           `&$filter=${filter}`,
         SPHttpClient.configurations.v1
       );
@@ -207,6 +230,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
         RequestID: item.RequestID,
         Status: item.Status ? item.Status.Title : "",
         AssignedTo: item.AssignedTo ? item.AssignedTo.Title : "",
+        AssignedToEmail: item.AssignedTo?.EMail || "",
         Created: item.Created,
       }));
 
