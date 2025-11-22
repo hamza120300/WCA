@@ -25,7 +25,7 @@ export const columns: IColumn[] = [
     name: "Status",
     fieldName: "Status",
     minWidth: 120,
-    maxWidth: 150,
+    maxWidth: 220,
     isResizable: true,
     onRender: (item) => <StatusBadge status={item.Status} />,
   },

@@ -1,7 +1,8 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { SPHttpClient } from "@microsoft/sp-http";
-import { Text, DefaultButton } from "@fluentui/react";
+import { Text } from "@fluentui/react";
+//, DefaultButton
 
 import {
   DetailsList,
@@ -39,7 +40,89 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const pageSize = 10;
+  const pageSize = 6;
+
+  interface IPaginationProps {
+    currentPage: number;
+    totalPages: number;
+    onChange: (page: number) => void;
+  }
+
+  const Pagination: React.FC<IPaginationProps> = ({
+    currentPage,
+    totalPages,
+    onChange,
+  }) => {
+    const renderPages = () => {
+      const pages: (number | string)[] = [];
+
+      pages.push(1);
+
+      if (currentPage > 3) pages.push("...");
+
+      for (let p = currentPage - 1; p <= currentPage + 1; p++) {
+        if (p > 1 && p < totalPages) pages.push(p);
+      }
+
+      if (currentPage < totalPages - 2) pages.push("...");
+
+      if (totalPages > 1) pages.push(totalPages);
+
+      return pages;
+    };
+
+    const pageStyle = (isCurrent: boolean) => ({
+      margin: "0 6px",
+      cursor: isCurrent ? "default" : "pointer",
+      fontWeight: isCurrent ? 600 : 400,
+      color: isCurrent ? "#0078D4" : "#000",
+    });
+
+    return (
+      <Stack
+        horizontal
+        horizontalAlign="center"
+        tokens={{ childrenGap: 2 }}
+        style={{ marginTop: 10 }}
+      >
+        <span
+          style={{
+            cursor: currentPage === 1 ? "default" : "pointer",
+            marginRight: 6,
+          }}
+          onClick={() => currentPage > 1 && onChange(currentPage - 1)}
+        >
+          &lt;
+        </span>
+
+        {renderPages().map((p, idx) =>
+          p === "..." ? (
+            <span key={idx} style={{ margin: "0 4px" }}>
+              …
+            </span>
+          ) : (
+            <span
+              key={idx}
+              style={pageStyle(p === currentPage)}
+              onClick={() => p !== currentPage && onChange(Number(p))}
+            >
+              {p}
+            </span>
+          )
+        )}
+
+        <span
+          style={{
+            cursor: currentPage === totalPages ? "default" : "pointer",
+            marginLeft: 6,
+          }}
+          onClick={() => currentPage < totalPages && onChange(currentPage + 1)}
+        >
+          &gt;
+        </span>
+      </Stack>
+    );
+  };
 
   // Columns for Fluent UI DetailsList
   const columns: IColumn[] = [
@@ -56,7 +139,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       name: "Status",
       fieldName: "Status",
       minWidth: 120,
-      maxWidth: 140,
+      maxWidth: 220,
       isResizable: true,
       onRender: (item: IRequestItem) => <StatusBadge status={item.Status} />,
     },
@@ -201,26 +284,11 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
 
       {/* Pagination */}
       {data.length > pageSize && (
-        <Stack
-          horizontal
-          tokens={{ childrenGap: 10 }}
-          horizontalAlign="center"
-          style={{ marginTop: 10 }}
-        >
-          <DefaultButton
-            text="Previous"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage(currentPage - 1)}
-          />
-          <span>
-            Page {currentPage} of {totalPages}
-          </span>
-          <DefaultButton
-            text="Next"
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(currentPage + 1)}
-          />
-        </Stack>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onChange={setCurrentPage}
+        />
       )}
     </Stack>
   );
