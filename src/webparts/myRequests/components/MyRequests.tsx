@@ -2,6 +2,8 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { SPHttpClient } from "@microsoft/sp-http";
 import { Text } from "@fluentui/react";
+import styles from "./MyRequests.module.scss";
+
 //, DefaultButton
 
 import {
@@ -138,6 +140,20 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       maxWidth: 120,
       isResizable: true,
     },
+
+    {
+      key: "Created",
+      name: "Creation Date",
+      fieldName: "Created",
+      minWidth: 150,
+      maxWidth: 160,
+      isResizable: true,
+      onRender: (item: IRequestItem) => {
+        if (!item.Created) return "-";
+        // Take only the date part
+        return item.Created.split("T")[0];
+      },
+    },
     {
       key: "Status",
       name: "Status",
@@ -147,6 +163,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       isResizable: true,
       onRender: (item: IRequestItem) => <StatusBadge status={item.Status} />,
     },
+
     {
       key: "AssignedTo",
       name: "Assigned Approver",
@@ -158,30 +175,20 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
         if (!item.AssignedTo) return "-";
 
         return (
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className={styles["person-pill"]}>
             <img
               src={getUserPhoto(item.AssignedToEmail || "")}
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: "50%",
-                objectFit: "cover",
-              }}
+              alt={item.AssignedTo}
+              className="personDisplayCoin_d125512b"
             />
-            <span style={{ fontSize: 14 }}>{item.AssignedTo}</span>
+            <span className="personDisplayName_d125512b">
+              {item.AssignedTo}
+            </span>
           </div>
         );
       },
     },
 
-    {
-      key: "Created",
-      name: "Creation Date",
-      fieldName: "Created",
-      minWidth: 150,
-      maxWidth: 160,
-      isResizable: true,
-    },
     {
       key: "Actions",
       name: "Actions",
@@ -219,7 +226,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       const response = await spHttpClient.get(
         `${siteUrl}/_api/web/lists/getbytitle('Requests')/items` +
           `?$select=Id,RequestID,Status/Title,AssignedTo/Title,AssignedTo/EMail,Created` +
-          `&$expand=AssignedTo,Status,Author` +
+          `&$expand=AssignedTo,Status` +
           `&$filter=${filter}`,
         SPHttpClient.configurations.v1
       );
@@ -260,8 +267,8 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
         selectedKey={tab}
         onLinkClick={(item) => setTab(item?.props.itemKey as "my" | "approval")}
       >
-        <PivotItem headerText="My Requests" itemKey="my" />
-        <PivotItem headerText="My Approvals" itemKey="approval" />
+        <PivotItem headerText="Created by me" itemKey="my" />
+        <PivotItem headerText="Assigned to me" itemKey="approval" />
       </Pivot>
 
       {/* Table */}

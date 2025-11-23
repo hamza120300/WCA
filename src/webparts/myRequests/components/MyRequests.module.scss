@@ -32,3 +32,31 @@
     }
   }
 }
+
+/* MyRequests.module.css */
+.person-pill {
+  background-color: #f3f2f1;
+  height: 24px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: top;
+  margin: 4px;
+  padding-right: 8px;
+}
+
+.person-pill img {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-left: 4px;
+  margin-right: 4px;
+}
+
+.person-pill span {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
