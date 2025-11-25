@@ -29,7 +29,7 @@ const isArabic =
 
 const tabs = [
   { key: "my", text: isArabic ? "أنشأته أنا" : "Created by me" },
-  { key: "approval", text: isArabic ? "مُسند إليّ" : "Assigned to me" },
+  { key: "approval", text: isArabic ? "مسند الي" : "Assigned to me" },
 ];
 
 interface IRequestItem {
@@ -143,7 +143,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
   const columns: IColumn[] = [
     {
       key: "ServiceType",
-      name: isArabic ? "نوع الخدمة" : "Service Type",
+      name: isArabic ? "نوع الخدمة" : "Request Type",
       fieldName: "ServiceType",
       minWidth: 150,
       maxWidth: 200,
@@ -179,7 +179,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       key: "AssignedTo",
       name: isArabic ? "الجهة المكلفة بالموافقة" : "Assigned Approver",
       fieldName: "AssignedTo",
-      minWidth: 180,
+      minWidth: 200,
       maxWidth: 220,
       isResizable: true,
       onRender: (item: IRequestItem) => {
@@ -254,11 +254,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
             ? item.ServiceType.Title_Ar
             : item.ServiceType.Title
           : "",
-        Status: item.Status
-          ? isArabic
-            ? item.Status.Title_Ar
-            : item.Status.Title
-          : "",
+        Status: item.Status ? item.Status.Title : "", // ALWAYS English
         AssignedTo: item.AssignedTo ? item.AssignedTo.Title : "",
         AssignedToEmail: item.AssignedTo?.EMail || "",
         Created: item.Created,
@@ -281,27 +277,43 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
   return (
     <Stack
       tokens={{ childrenGap: 10 }}
-      style={{ direction: isArabic ? "rtl" : "ltr" }}
+      style={{
+        direction: isArabic ? "rtl" : "ltr",
+        textAlign: isArabic ? "right" : "left",
+      }}
     >
       {/* Title */}
-      <Text
-        variant="xLarge"
-        block
-         style={{ direction: isArabic ? "rtl" : "ltr" }}
+      <div
+        style={{
+          direction: isArabic ? "rtl" : "ltr",
+          textAlign: isArabic ? "right" : "left",
+        }}
       >
-        {isArabic ? "الطلبات والموافقات" : "Requests & Approvals"}
-      </Text>
+        <Text variant="xLarge" block>
+          {isArabic ? "الطلبات والموافقات" : "Requests & Approvals"}
+        </Text>
+      </div>
 
       {/* Pivot Tabs */}
       <Pivot
         selectedKey={tab}
         onLinkClick={(item) => setTab(item?.props.itemKey as "my" | "approval")}
+        style={{
+          direction: isArabic ? "rtl" : "ltr",
+          textAlign: isArabic ? "right" : "left",
+        }}
+        // linkFormat="tabs"
+        //headersOnly={false}
       >
-        {/* <PivotItem headerText="Created by me" itemKey="my" />
-        <PivotItem headerText="Assigned to me" itemKey="approval" /> */}
-
         {tabs.map((tab) => (
-          <PivotItem key={tab.key} itemKey={tab.key} headerText={tab.text} />
+          <PivotItem
+            key={tab.key}
+            itemKey={tab.key}
+            headerText={tab.text}
+            headerButtonProps={{
+              style: { textAlign: isArabic ? "right" : "left" },
+            }}
+          />
         ))}
       </Pivot>
 
