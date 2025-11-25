@@ -24,9 +24,18 @@ interface IMyRequestsProps {
   defaultMode?: "my" | "approval"; // optional, from property pane
 }
 
+const isArabic =
+  window.location.pathname.toLowerCase().indexOf("/sitepages/ar/") !== -1;
+
+const tabs = [
+  { key: "my", text: isArabic ? "أنشأته أنا" : "Created by me" },
+  { key: "approval", text: isArabic ? "مُسند إليّ" : "Assigned to me" },
+];
+
 interface IRequestItem {
   id: number;
-  RequestID: string;
+  // RequestID: string;
+  ServiceType: string;
   Status: string;
   AssignedTo: string;
   Created: string;
@@ -133,17 +142,17 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
   // Columns for Fluent UI DetailsList
   const columns: IColumn[] = [
     {
-      key: "RequestID",
-      name: "Request Type",
-      fieldName: "RequestID",
-      minWidth: 100,
-      maxWidth: 120,
+      key: "ServiceType",
+      name: isArabic ? "نوع الخدمة" : "Service Type",
+      fieldName: "ServiceType",
+      minWidth: 150,
+      maxWidth: 200,
       isResizable: true,
     },
 
     {
       key: "Created",
-      name: "Creation Date",
+      name: isArabic ? "تاريخ الإنشاء" : "Created Date",
       fieldName: "Created",
       minWidth: 150,
       maxWidth: 160,
@@ -156,7 +165,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
     },
     {
       key: "Status",
-      name: "Status",
+      name: isArabic ? "الحالة" : "Status",
       fieldName: "Status",
       minWidth: 120,
       maxWidth: 220,
@@ -166,7 +175,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
 
     {
       key: "AssignedTo",
-      name: "Assigned Approver",
+      name: isArabic ? "الجهة المكلفة بالموافقة" : "Assigned Approver",
       fieldName: "AssignedTo",
       minWidth: 180,
       maxWidth: 220,
@@ -175,7 +184,10 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
         if (!item.AssignedTo) return "-";
 
         return (
-          <div className={styles["person-pill"]}>
+          <div
+            className={styles["person-pill"]}
+            style={{ flexDirection: isArabic ? "row-reverse" : "row" }}
+          >
             <img
               src={getUserPhoto(item.AssignedToEmail || "")}
               alt={item.AssignedTo}
@@ -191,7 +203,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
 
     {
       key: "Actions",
-      name: "Actions",
+      name: isArabic ? "الإجراءات" : "Actions",
       minWidth: 80,
       maxWidth: 100,
       isResizable: false,
@@ -225,8 +237,8 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
 
       const response = await spHttpClient.get(
         `${siteUrl}/_api/web/lists/getbytitle('Requests')/items` +
-          `?$select=Id,RequestID,Status/Title,AssignedTo/Title,AssignedTo/EMail,Created` +
-          `&$expand=AssignedTo,Status` +
+          `?$select=Id,RequestID,ServiceType/Title,ServiceType/Title_Ar,Status/Title,Status/Title_Ar,AssignedTo/Title,AssignedTo/EMail,Created` +
+          `&$expand=AssignedTo,Status,ServiceType` +
           `&$filter=${filter}`,
         SPHttpClient.configurations.v1
       );
@@ -235,7 +247,16 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       const mappedItems = items.value.map((item: any) => ({
         id: item.Id,
         RequestID: item.RequestID,
-        Status: item.Status ? item.Status.Title : "",
+        ServiceType: item.ServiceType
+          ? isArabic
+            ? item.ServiceType.Title_Ar
+            : item.ServiceType.Title
+          : "",
+        Status: item.Status
+          ? isArabic
+            ? item.Status.Title_Ar
+            : item.Status.Title
+          : "",
         AssignedTo: item.AssignedTo ? item.AssignedTo.Title : "",
         AssignedToEmail: item.AssignedTo?.EMail || "",
         Created: item.Created,
@@ -256,10 +277,17 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
   const totalPages = Math.ceil(data.length / pageSize);
 
   return (
-    <Stack tokens={{ childrenGap: 10 }}>
+    <Stack
+      tokens={{ childrenGap: 10 }}
+      style={{ direction: isArabic ? "rtl" : "ltr" }}
+    >
       {/* Title */}
-      <Text variant="xLarge" block>
-        Requests & Approvals
+      <Text
+        variant="xLarge"
+        block
+        // style={{ direction: isArabic ? "rtl" : "ltr" }}
+      >
+        {isArabic ? "الطلبات والموافقات" : "Requests & Approvals"}
       </Text>
 
       {/* Pivot Tabs */}
@@ -267,8 +295,12 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
         selectedKey={tab}
         onLinkClick={(item) => setTab(item?.props.itemKey as "my" | "approval")}
       >
-        <PivotItem headerText="Created by me" itemKey="my" />
-        <PivotItem headerText="Assigned to me" itemKey="approval" />
+        {/* <PivotItem headerText="Created by me" itemKey="my" />
+        <PivotItem headerText="Assigned to me" itemKey="approval" /> */}
+
+        {tabs.map((tab) => (
+          <PivotItem key={tab.key} itemKey={tab.key} headerText={tab.text} />
+        ))}
       </Pivot>
 
       {/* Table */}
@@ -283,7 +315,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
 
           // Show "No data found" if pagedItems is empty
           if (pagedItems.length === 0) {
-            return column.key === "RequestID" ? (
+            return column.key === "ServiceType" ? (
               <span style={{ fontStyle: "italic", color: "#666" }}>
                 No data found
               </span>
