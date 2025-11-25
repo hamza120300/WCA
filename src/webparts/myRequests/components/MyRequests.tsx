@@ -170,7 +170,9 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       minWidth: 120,
       maxWidth: 220,
       isResizable: true,
-      onRender: (item: IRequestItem) => <StatusBadge status={item.Status} />,
+      onRender: (item: IRequestItem) => (
+        <StatusBadge status={item.Status} lang={isArabic ? "ar" : "en"} />
+      ),
     },
 
     {
@@ -285,7 +287,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       <Text
         variant="xLarge"
         block
-        // style={{ direction: isArabic ? "rtl" : "ltr" }}
+         style={{ direction: isArabic ? "rtl" : "ltr" }}
       >
         {isArabic ? "الطلبات والموافقات" : "Requests & Approvals"}
       </Text>
