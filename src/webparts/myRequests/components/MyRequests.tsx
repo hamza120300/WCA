@@ -32,6 +32,9 @@ const tabs = [
   { key: "approval", text: isArabic ? "مسند الي" : "Assigned to me" },
 ];
 
+// const [sortedColumn, setSortedColumn] = useState<string | undefined>();
+// const [isSortedDescending, setIsSortedDescending] = useState<boolean | undefined>();
+
 interface IRequestItem {
   id: number;
   // RequestID: string;
@@ -49,6 +52,30 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
 }) => {
   const [tab, setTab] = useState<"my" | "approval">(defaultMode || "my");
   const [data, setData] = useState<IRequestItem[]>([]);
+  const [sortedColumn, setSortedColumn] = useState<string | undefined>();
+  const [isSortedDescending, setIsSortedDescending] = useState<
+    boolean | undefined
+  >();
+
+  const onColumnClick = (
+    ev: React.MouseEvent<HTMLElement>,
+    column: IColumn
+  ) => {
+    const newDesc = sortedColumn === column.key ? !isSortedDescending : false;
+
+    const sorted = [...data].sort((a, b) => {
+      const aVal = a[column.fieldName as keyof IRequestItem] || "";
+      const bVal = b[column.fieldName as keyof IRequestItem] || "";
+
+      return newDesc
+        ? ("" + bVal).localeCompare("" + aVal)
+        : ("" + aVal).localeCompare("" + bVal);
+    });
+
+    setSortedColumn(column.key);
+    setIsSortedDescending(newDesc);
+    setData(sorted);
+  };
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -96,7 +123,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
     return (
       <Stack
         horizontal
-        horizontalAlign="center"
+        horizontalAlign="start"
         tokens={{ childrenGap: 2 }}
         style={{ marginTop: 10 }}
       >
@@ -148,6 +175,9 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       minWidth: 150,
       maxWidth: 200,
       isResizable: true,
+      isSorted: sortedColumn === "ServiceType",
+      isSortedDescending: isSortedDescending,
+      onColumnClick: onColumnClick,
     },
 
     {
@@ -157,6 +187,9 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       minWidth: 150,
       maxWidth: 160,
       isResizable: true,
+      isSorted: sortedColumn === "Created",
+      isSortedDescending: isSortedDescending,
+      onColumnClick: onColumnClick,
       onRender: (item: IRequestItem) => {
         if (!item.Created) return "-";
         // Take only the date part
@@ -173,6 +206,9 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       onRender: (item: IRequestItem) => (
         <StatusBadge status={item.Status} lang={isArabic ? "ar" : "en"} />
       ),
+      isSorted: sortedColumn === "Status",
+      isSortedDescending: isSortedDescending,
+      onColumnClick: onColumnClick,
     },
 
     {
@@ -241,7 +277,8 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
         `${siteUrl}/_api/web/lists/getbytitle('Requests')/items` +
           `?$select=Id,RequestID,ServiceType/Title,ServiceType/Title_Ar,Status/Title,Status/Title_Ar,AssignedTo/Title,AssignedTo/EMail,Created` +
           `&$expand=AssignedTo,Status,ServiceType` +
-          `&$filter=${filter}`,
+          `&$filter=${filter}` +
+          `&$orderby=Created desc`,
         SPHttpClient.configurations.v1
       );
 
