@@ -4,7 +4,7 @@ import { SPHttpClient } from "@microsoft/sp-http";
 import { Text } from "@fluentui/react";
 import styles from "./MyRequests.module.scss";
 
-//, DefaultButton
+//, DefaultButton // start add arrow 
 
 import {
   DetailsList,
@@ -28,18 +28,17 @@ const isArabic =
   window.location.pathname.toLowerCase().indexOf("/sitepages/ar/") !== -1;
 
 const tabs = [
-  { key: "my", text: isArabic ? "أنشأته أنا" : "Created by me" },
+  { key: "my", text: isArabic ? "طلباتي" : "Created by me" },
   { key: "approval", text: isArabic ? "مسند الي" : "Assigned to me" },
 ];
 
-// const [sortedColumn, setSortedColumn] = useState<string | undefined>();
-// const [isSortedDescending, setIsSortedDescending] = useState<boolean | undefined>();
+
 
 interface IRequestItem {
   id: number;
   // RequestID: string;
   ServiceType: string;
-  Status: string;
+  Status: string;    
   AssignedTo: string;
   Created: string;
   AssignedToEmail?: string;
@@ -372,7 +371,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
               </span>
             ) : null;
           }
-
+          
           const value = item[column.fieldName as keyof IRequestItem];
 
           // Custom render for Status

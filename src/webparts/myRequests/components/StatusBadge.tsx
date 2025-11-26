@@ -19,6 +19,8 @@ export const StatusBadge: React.FC<IStatusBadgeProps> = ({
     "Pending On Chief Approval": "#FFEBC0",
     "Pending On HR Approval": "#FFEBC0",
     "Pending On CEO Approval": "#FFEBC0",
+    "Pending On Manager Approval": "#FFEBC0",
+    "Pending On IT Approval": "#FFEBC0",
   };
 
   // Text colors for English keys
@@ -41,6 +43,8 @@ export const StatusBadge: React.FC<IStatusBadgeProps> = ({
     "Pending On Chief Approval": "في انتظار موافقة الرئيس",
     "Pending On HR Approval": "في انتظار موافقة الموارد البشرية",
     "Pending On CEO Approval": "في انتظار موافقة الرئيس التنفيذي",
+    "Pending On Manager Approval": "في انتظار موافقة المدير المباشر",
+    "Pending On IT Approval": "في انتظار موافقة قسم تكنولوجيا المعلومات",
     Approved: "موافقه",
     Reject: "رفض",
   };
