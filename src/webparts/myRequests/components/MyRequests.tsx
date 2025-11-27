@@ -4,7 +4,7 @@ import { SPHttpClient } from "@microsoft/sp-http";
 import { Text } from "@fluentui/react";
 import styles from "./MyRequests.module.scss";
 
-//, DefaultButton // start add arrow 
+//, DefaultButton // start add arrow
 
 import {
   DetailsList,
@@ -32,13 +32,11 @@ const tabs = [
   { key: "approval", text: isArabic ? "مسند الي" : "Assigned to me" },
 ];
 
-
-
 interface IRequestItem {
   id: number;
   // RequestID: string;
   ServiceType: string;
-  Status: string;    
+  Status: string;
   AssignedTo: string;
   Created: string;
   AssignedToEmail?: string;
@@ -171,8 +169,8 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       key: "ServiceType",
       name: isArabic ? "نوع الخدمة" : "Request Type",
       fieldName: "ServiceType",
-      minWidth: 150,
-      maxWidth: 200,
+      minWidth: 80,
+      maxWidth: 100,
       isResizable: true,
       isSorted: sortedColumn === "ServiceType",
       isSortedDescending: isSortedDescending,
@@ -183,8 +181,8 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       key: "Created",
       name: isArabic ? "تاريخ الإنشاء" : "Created Date",
       fieldName: "Created",
-      minWidth: 150,
-      maxWidth: 160,
+      minWidth: 80,
+      maxWidth: 100,
       isResizable: true,
       isSorted: sortedColumn === "Created",
       isSortedDescending: isSortedDescending,
@@ -199,8 +197,8 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       key: "Status",
       name: isArabic ? "الحالة" : "Status",
       fieldName: "Status",
-      minWidth: 120,
-      maxWidth: 220,
+      minWidth: 180,
+      maxWidth: 190,
       isResizable: true,
       onRender: (item: IRequestItem) => (
         <StatusBadge status={item.Status} lang={isArabic ? "ar" : "en"} />
@@ -214,8 +212,8 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       key: "AssignedTo",
       name: isArabic ? "الجهة المكلفة بالموافقة" : "Assigned Approver",
       fieldName: "AssignedTo",
-      minWidth: 200,
-      maxWidth: 220,
+      minWidth: 150,
+      maxWidth: 185,
       isResizable: true,
       onRender: (item: IRequestItem) => {
         if (!item.AssignedTo) return "-";
@@ -242,7 +240,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       key: "Actions",
       name: isArabic ? "الإجراءات" : "Actions",
       minWidth: 80,
-      maxWidth: 100,
+      maxWidth: 80,
       isResizable: false,
       onRender: (item: IRequestItem) => (
         <ActionButton
@@ -354,47 +352,48 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       </Pivot>
 
       {/* Table */}
-      <DetailsList
-        items={pagedItems.length > 0 ? pagedItems : [{} as IRequestItem]} // dummy row if no data
-        columns={columns}
-        selectionMode={SelectionMode.none}
-        layoutMode={DetailsListLayoutMode.fixedColumns}
-        isHeaderVisible={true}
-        onRenderItemColumn={(item, index, column) => {
-          if (!column) return null;
+      <div style={{ height: "100%", overflowY: "auto" }}>
+        <DetailsList
+          items={pagedItems.length > 0 ? pagedItems : [{} as IRequestItem]} // dummy row if no data
+          columns={columns}
+          selectionMode={SelectionMode.none}
+          layoutMode={DetailsListLayoutMode.fixedColumns}
+          isHeaderVisible={true}
+          onRenderItemColumn={(item, index, column) => {
+            if (!column) return null;
 
-          // Show "No data found" if pagedItems is empty
-          if (pagedItems.length === 0) {
-            return column.key === "ServiceType" ? (
-              <span style={{ fontStyle: "italic", color: "#666" }}>
-                No data found
-              </span>
-            ) : null;
-          }
-          
-          const value = item[column.fieldName as keyof IRequestItem];
+            // Show "No data found" if pagedItems is empty
+            if (pagedItems.length === 0) {
+              return column.key === "ServiceType" ? (
+                <span style={{ fontStyle: "italic", color: "#666" }}>
+                  No data found
+                </span>
+              ) : null;
+            }
 
-          // Custom render for Status
-          if (column.key === "Status")
-            return <StatusBadge status={value as string} />;
+            const value = item[column.fieldName as keyof IRequestItem];
 
-          // Custom render for Actions
-          if (column.key === "Actions")
-            return (
-              <ActionButton
-                onClick={() =>
-                  window.open(
-                    `${siteUrl}/Lists/Requests/DispForm.aspx?ID=${item.id}`,
-                    "_blank"
-                  )
-                }
-              />
-            );
+            // Custom render for Status
+            if (column.key === "Status")
+              return <StatusBadge status={value as string} />;
 
-          return <span>{value}</span>;
-        }}
-      />
+            // Custom render for Actions
+            if (column.key === "Actions")
+              return (
+                <ActionButton
+                  onClick={() =>
+                    window.open(
+                      `${siteUrl}/Lists/Requests/DispForm.aspx?ID=${item.id}`,
+                      "_blank"
+                    )
+                  }
+                />
+              );
 
+            return <span>{value}</span>;
+          }}
+        />
+      </div>
       {/* Pagination */}
       {data.length > pageSize && (
         <Pagination
