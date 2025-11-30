@@ -48,6 +48,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
   defaultMode,
 }) => {
   const [tab, setTab] = useState<"my" | "approval">(defaultMode || "my");
+  const [detailsRootURL, setDetailsRootURL] = React.useState("");
   const [data, setData] = useState<IRequestItem[]>([]);
   const [sortedColumn, setSortedColumn] = useState<string | undefined>();
   const [isSortedDescending, setIsSortedDescending] = useState<
@@ -189,10 +190,22 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       onColumnClick: onColumnClick,
       onRender: (item: IRequestItem) => {
         if (!item.Created) return "-";
-        // Take only the date part
-        return item.Created.split("T")[0];
+
+        // Parse the date
+        const date = new Date(item.Created);
+
+        // Options for desired format: 30 - Dec - 2025
+        const options: Intl.DateTimeFormatOptions = {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        };
+
+        // Format in English
+        return date.toLocaleDateString("en-GB", options).replace(/ /g, " - ");
       },
     },
+
     {
       key: "Status",
       name: isArabic ? "الحالة" : "Status",
@@ -310,6 +323,20 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
 
   useEffect(() => {
     const fetchData = async () => {
+      //fetch from Configurations
+      const configsResponse = await spHttpClient.get(
+        `${siteUrl}/_api/web/lists/getbytitle('Configurations')/items?$select=Title,Value`,
+        SPHttpClient.configurations.v1
+      );
+      const configsJson = await configsResponse.json();
+
+      let root = "";
+      configsJson.value.forEach((cfg: any) => {
+        if (cfg.Title === "DetailsRootURL") root = cfg.Value || "";
+      });
+
+      setDetailsRootURL(root);
+
       // Get current user
       const userResponse = await spHttpClient.get(
         `${siteUrl}/_api/web/currentuser`,
@@ -330,7 +357,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
 
       const response = await spHttpClient.get(
         `${siteUrl}/_api/web/lists/getbytitle('Requests')/items` +
-          `?$select=Id,RequestID,Author/EMail,ServiceType/Title,ServiceType/Title_Ar,Status/Title,Status/Title_Ar,AssignedTo/Title,AssignedTo/EMail,Created` +
+          `?$select=Id,RequestID,Author/EMail,ServiceType/DetailsPage,ServiceType/Title,ServiceType/Title_Ar,Status/Title,Status/Title_Ar,AssignedTo/Title,AssignedTo/EMail,Created` +
           `&$expand=AssignedTo,Status,ServiceType,Author` +
           `&$orderby=Created desc`,
         SPHttpClient.configurations.v1
@@ -342,6 +369,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       const mappedItems = (items.value || []).map((item: any) => ({
         id: item.Id,
         RequestID: item.RequestID,
+        DetailsPage: item.ServiceType?.DetailsPage || "",
         ServiceType: item.ServiceType
           ? isArabic
             ? item.ServiceType.Title_Ar
@@ -353,7 +381,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
         AuthorEmail: item.Author?.EMail || "",
         Created: item.Created,
       }));
-
+      console.log("DetailsPage", items.DetailsPage);
       let filteredItems: IRequestItem[] = [];
 
       if (tab === "my") {
@@ -368,7 +396,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
           return false;
         });
       }
-
+      console.log("DetailsPage : ", items.DetailsPage);
       setData(filteredItems);
       setCurrentPage(1);
     };
@@ -457,13 +485,15 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
             // Custom render for Actions
             if (column.key === "Actions")
               return (
+          
                 <ActionButton
-                  onClick={() =>
+                  onClick={() => {
+                    const encodedRequestId = btoa(item.RequestID); // encode RequestID
                     window.open(
-                      `${siteUrl}/Lists/Requests/DispForm.aspx?ID=${item.id}`,
+                      `${detailsRootURL}${item.DetailsPage}?requestId=${encodedRequestId}`,
                       "_blank"
-                    )
-                  }
+                    );
+                  }}
                 />
               );
 
