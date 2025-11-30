@@ -40,12 +40,12 @@ export const StatusBadge: React.FC<IStatusBadgeProps> = ({
     Submitted: "مقدم",
     Pending: "قيد الانتظار",
     Completed: "اكتملت",
-    "Pending On Chief Approval": "في انتظار موافقة الرئيس",
-    "Pending On HR Approval": "في انتظار موافقة الموارد البشرية",
-    "Pending On CEO Approval": "في انتظار موافقة الرئيس التنفيذي",
-    "Pending On Manager Approval": "في انتظار موافقة المدير المباشر",
-    "Pending On IT Approval": "في انتظار موافقة قسم تكنولوجيا المعلومات",
-    Approved: "موافقه",
+    "Pending Chief Approval": "في انتظار موافقة الرئيس",
+    "Pending  HR Approval": "في انتظار موافقة الموارد البشرية",
+    "Pending  CEO Approval": "في انتظار موافقة الرئيس التنفيذي",
+    "Pending  Manager Approval": "في انتظار موافقة المدير المباشر",
+    "Pending  IT Approval": "في انتظار موافقة قسم تكنولوجيا المعلومات",
+    Approved: "موافقة",
     Reject: "رفض",
   };
 

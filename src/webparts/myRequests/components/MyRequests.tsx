@@ -255,6 +255,59 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
     },
   ];
 
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     // Get current user
+  //     /*  const userResponse = await spHttpClient.get(
+  //       `${siteUrl}/_api/web/currentuser`,
+  //       SPHttpClient.configurations.v1
+  //     );
+  //     const currentUser = await userResponse.json();
+  //     const email = currentUser.Email;
+
+  //     const filter =
+  //       tab === "approval"
+  //         ? `AssignedTo/EMail eq '${email}'`
+  //         : `Author/EMail eq '${email}'`;*/
+
+  //     const groupsResponse = await spHttpClient.get(
+  //       `${siteUrl}/_api/web/currentuser/groups`,
+  //       SPHttpClient.configurations.v1
+  //     );
+  //     const groupsJson = await groupsResponse.json();
+  //     const userGroups = groupsJson.value.map((g: any) => g.Title);
+
+  //     const response = await spHttpClient.get(
+  //       `${siteUrl}/_api/web/lists/getbytitle('Requests')/items` +
+  //         `?$select=Id,RequestID,ServiceType/Title,ServiceType/Title_Ar,Status/Title,Status/Title_Ar,AssignedTo/Title,AssignedTo/EMail,Created` +
+  //         `&$expand=AssignedTo,Status,ServiceType` +
+  //         //`&$filter=${filter}` +
+  //         `&$orderby=Created desc`,
+  //       SPHttpClient.configurations.v1
+  //     );
+
+  //     const items = await response.json();
+  //     const mappedItems = items.value.map((item: any) => ({
+  //       id: item.Id,
+  //       RequestID: item.RequestID,
+  //       ServiceType: item.ServiceType
+  //         ? isArabic
+  //           ? item.ServiceType.Title_Ar
+  //           : item.ServiceType.Title
+  //         : "",
+  //       Status: item.Status ? item.Status.Title : "", // ALWAYS English
+  //       AssignedTo: item.AssignedTo ? item.AssignedTo.Title : "",
+  //       AssignedToEmail: item.AssignedTo?.EMail || "",
+  //       Created: item.Created,
+  //     }));
+
+  //     setData(mappedItems);
+  //     setCurrentPage(1); // reset to first page when tab changes
+  //   };
+
+  //   fetchData();
+  // }, [spHttpClient, siteUrl, tab]);
+
   useEffect(() => {
     const fetchData = async () => {
       // Get current user
@@ -263,24 +316,30 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
         SPHttpClient.configurations.v1
       );
       const currentUser = await userResponse.json();
-      const email = currentUser.Email;
+      const email = currentUser.Email.toLowerCase();
 
-      const filter =
-        tab === "approval"
-          ? `AssignedTo/EMail eq '${email}'`
-          : `Author/EMail eq '${email}'`;
+      const groupsResponse = await spHttpClient.get(
+        `${siteUrl}/_api/web/currentuser/groups`,
+        SPHttpClient.configurations.v1
+      );
+      const groupsJson = await groupsResponse.json();
+
+      const userGroups: string[] = (groupsJson.value || []).map((g: any) =>
+        String(g.Title || "")
+      );
 
       const response = await spHttpClient.get(
         `${siteUrl}/_api/web/lists/getbytitle('Requests')/items` +
-          `?$select=Id,RequestID,ServiceType/Title,ServiceType/Title_Ar,Status/Title,Status/Title_Ar,AssignedTo/Title,AssignedTo/EMail,Created` +
-          `&$expand=AssignedTo,Status,ServiceType` +
-          `&$filter=${filter}` +
+          `?$select=Id,RequestID,Author/EMail,ServiceType/Title,ServiceType/Title_Ar,Status/Title,Status/Title_Ar,AssignedTo/Title,AssignedTo/EMail,Created` +
+          `&$expand=AssignedTo,Status,ServiceType,Author` +
           `&$orderby=Created desc`,
         SPHttpClient.configurations.v1
       );
 
       const items = await response.json();
-      const mappedItems = items.value.map((item: any) => ({
+
+      //   const mappedItems = items.value.map((item: any) => ({
+      const mappedItems = (items.value || []).map((item: any) => ({
         id: item.Id,
         RequestID: item.RequestID,
         ServiceType: item.ServiceType
@@ -288,18 +347,36 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
             ? item.ServiceType.Title_Ar
             : item.ServiceType.Title
           : "",
-        Status: item.Status ? item.Status.Title : "", // ALWAYS English
+        Status: item.Status ? item.Status.Title : "",
         AssignedTo: item.AssignedTo ? item.AssignedTo.Title : "",
         AssignedToEmail: item.AssignedTo?.EMail || "",
+        AuthorEmail: item.Author?.EMail || "",
         Created: item.Created,
       }));
 
-      setData(mappedItems);
-      setCurrentPage(1); // reset to first page when tab changes
+      let filteredItems: IRequestItem[] = [];
+
+      if (tab === "my") {
+        filteredItems = mappedItems.filter((mi: any) => {
+          return (mi.AuthorEmail || "").toLowerCase() === email;
+        });
+      } else {
+        filteredItems = mappedItems.filter((mi: any) => {
+          if ((mi.AssignedToEmail || "").toLowerCase() === email) return true;
+          if (mi.AssignedTo && userGroups.indexOf(mi.AssignedTo) !== -1)
+            return true;
+          return false;
+        });
+      }
+
+      setData(filteredItems);
+      setCurrentPage(1);
     };
 
     fetchData();
   }, [spHttpClient, siteUrl, tab]);
+
+  // ------------
 
   // Slice data for current page
   const pagedItems = data.slice(
