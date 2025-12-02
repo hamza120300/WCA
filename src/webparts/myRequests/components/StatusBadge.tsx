@@ -13,7 +13,7 @@ export const StatusBadge: React.FC<IStatusBadgeProps> = ({
   const bgColors: Record<string, string> = {
     Pending: "#FFEBC0",
     Approved: "#CAF0CC",
-    Reject: "#FED5D1",
+    Rejected: "#FED5D1",
     Submitted: "#E6E6E6",
     Completed: "#D6EAF8",
     "Pending Chief Approval": "#FFEBC0",
@@ -27,7 +27,7 @@ export const StatusBadge: React.FC<IStatusBadgeProps> = ({
   const textColors: Record<string, string> = {
     Pending: "#8F6200",
     Approved: "#437406",
-    Reject: "#A0410D",
+    Rejected: "#A0410D",
     Submitted: "#444444",
     Completed: "#1B4F72",
     "Pending Chief Approval": "#8F6200",
@@ -48,7 +48,7 @@ export const StatusBadge: React.FC<IStatusBadgeProps> = ({
     "Pending Manager Approval": "في انتظار موافقة المدير المباشر",
     "Pending IT Approval": "في انتظار موافقة قسم تكنولوجيا المعلومات",
     Approved: "موافقة",
-    Reject: "رفض",
+    Rejected: "رفض",
   };
 
   // Colors always use English keys
@@ -62,10 +62,10 @@ export const StatusBadge: React.FC<IStatusBadgeProps> = ({
     <div
       style={{
         display: "inline-flex",
-        justifyContent: "center",
+        justifyContent: "start",
         alignItems: "center",
         padding: "6px 12px",
-        minWidth: lang === "ar" ? 110 : 90, // wider for Arabic
+        // minWidth: lang === "ar" ? 110 : 90, // wider for Arabic
         borderRadius: "50px",
         backgroundColor,
         color: textColor,

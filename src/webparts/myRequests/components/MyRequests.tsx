@@ -34,12 +34,13 @@ const tabs = [
 
 interface IRequestItem {
   id: number;
-  // RequestID: string;
+  RequestID: string;
   ServiceType: string;
   Status: string;
   AssignedTo: string;
   Created: string;
   AssignedToEmail?: string;
+  DetailsPage: string; // NEW
 }
 
 export const MyRequests: React.FC<IMyRequestsProps> = ({
@@ -170,8 +171,8 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       key: "ServiceType",
       name: isArabic ? "نوع الخدمة" : "Request Type",
       fieldName: "ServiceType",
-      minWidth: 80,
-      maxWidth: 100,
+      minWidth: 100,
+      maxWidth: 120,
       isResizable: true,
       isSorted: sortedColumn === "ServiceType",
       isSortedDescending: isSortedDescending,
@@ -202,7 +203,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
         };
 
         // Format in English
-        return date.toLocaleDateString("en-GB", options).replace(/ /g, " - ");
+        return date.toLocaleDateString("en-GB", options).replace(/ /g, "  ");
       },
     },
 
@@ -226,7 +227,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       name: isArabic ? "الجهة المكلفة بالموافقة" : "Assigned Approver",
       fieldName: "AssignedTo",
       minWidth: 150,
-      maxWidth: 185,
+      maxWidth: 200,
       isResizable: true,
       onRender: (item: IRequestItem) => {
         if (!item.AssignedTo) return "-";
@@ -252,17 +253,30 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
     {
       key: "Actions",
       name: isArabic ? "الإجراءات" : "Actions",
-      minWidth: 80,
-      maxWidth: 80,
+      minWidth: 60,
+      maxWidth: 60,
       isResizable: false,
       onRender: (item: IRequestItem) => (
+        // <ActionButton
+        //   onClick={() =>
+        //     window.open(
+        //       `${siteUrl}/Lists/Requests/DispForm.aspx?ID=${item.id}`,
+        //       "_blank"
+        //     )
+        //   }
+        // />
         <ActionButton
-          onClick={() =>
+          onClick={() => {
+            const encodedRequestId = btoa(item.RequestID); // encode RequestID
             window.open(
-              `${siteUrl}/Lists/Requests/DispForm.aspx?ID=${item.id}`,
+              `${detailsRootURL}${
+                item.DetailsPage
+              }?requestId=${encodedRequestId}${
+                isArabic ? "&locale=ar-sa" : ""
+              }`,
               "_blank"
-            )
-          }
+            );
+          }}
         />
       ),
     },
@@ -381,7 +395,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
         AuthorEmail: item.Author?.EMail || "",
         Created: item.Created,
       }));
-      console.log("DetailsPage", items.DetailsPage);
+      //console.log("DetailsPage", mappedItems[0].DetailsPage);
       let filteredItems: IRequestItem[] = [];
 
       if (tab === "my") {
@@ -396,11 +410,11 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
           return false;
         });
       }
-      console.log("DetailsPage : ", items.DetailsPage);
+     // console.log("DetailsPage", mappedItems[0].DetailsPage);
       setData(filteredItems);
       setCurrentPage(1);
     };
-
+    //console.log("DetailsPage", items[0].DetailsPage);
     fetchData();
   }, [spHttpClient, siteUrl, tab]);
 
@@ -477,7 +491,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
             }
 
             const value = item[column.fieldName as keyof IRequestItem];
-
+           // console.log("DetailsPage > ", item["DetailsPage"]);
             // Custom render for Status
             if (column.key === "Status")
               return <StatusBadge status={value as string} />;
@@ -485,7 +499,6 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
             // Custom render for Actions
             if (column.key === "Actions")
               return (
-          
                 <ActionButton
                   onClick={() => {
                     const encodedRequestId = btoa(item.RequestID); // encode RequestID
