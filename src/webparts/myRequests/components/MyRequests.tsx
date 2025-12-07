@@ -435,7 +435,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
 
   return (
     <Stack
-      tokens={{ childrenGap: 10 }}
+      tokens={{  childrenGap: window.innerWidth < 600 ? 4 : 10 }}
       style={{
         direction: isArabic ? "rtl" : "ltr",
         textAlign: isArabic ? "right" : "left",
@@ -452,7 +452,6 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
           {isArabic ? "الطلبات والموافقات" : "Requests & Approvals"}
         </Text>
       </div>
-
       {/* Pivot Tabs */}
       <Pivot
         selectedKey={tab}
@@ -475,9 +474,9 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
           />
         ))}
       </Pivot>
-
-      {/* Table */}
-      <div style={{ height: "100%", overflowY: "auto" }}>
+      
+      {/* Table // overflowX allow horizontal scroll for mobile */}
+      <div style={{ height: "100%", overflowY: "auto", overflowX: "auto" }}>
         <DetailsList
           items={pagedItems.length > 0 ? pagedItems : [{} as IRequestItem]} // dummy row if no data
           columns={columns}
