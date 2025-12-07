@@ -377,7 +377,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
 
       const response = await spHttpClient.get(
         `${siteUrl}/_api/web/lists/getbytitle('Requests')/items` +
-          `?$select=Id,RequestID,Author/EMail,ServiceType/DetailsPage,ServiceType/Title,ServiceType/Title_Ar,Status/Title,Status/Title_Ar,AssignedTo/Title,AssignedTo/EMail,Created` +
+          `?$select=Id,RequestID,Author/EMail,ServiceType/DetailsPage,ServiceType/Title,ServiceType/Title_Ar,Status/SummarizedTitle,Status/SummarizedTitle_Ar,AssignedTo/Title,AssignedTo/EMail,Created` +
           `&$expand=AssignedTo,Status,ServiceType,Author` +
           `&$orderby=Created desc`,
         SPHttpClient.configurations.v1
@@ -395,7 +395,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
             ? item.ServiceType.Title_Ar
             : item.ServiceType.Title
           : "",
-        Status: item.Status ? item.Status.Title : "",
+        Status: item.Status ? item.Status.SummarizedTitle : "",
         AssignedTo: item.AssignedTo ? item.AssignedTo.Title : "",
         AssignedToEmail: item.AssignedTo?.EMail || "",
         AuthorEmail: item.Author?.EMail || "",
@@ -435,7 +435,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
 
   return (
     <Stack
-      tokens={{ childrenGap: 10 }}
+      tokens={{ childrenGap: window.innerWidth < 600 ? 4 : 10 }}
       style={{
         direction: isArabic ? "rtl" : "ltr",
         textAlign: isArabic ? "right" : "left",
@@ -477,7 +477,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       </Pivot>
 
       {/* Table */}
-      <div style={{ height: "100%", overflowY: "auto" }}>
+      <div style={{ height: "100%", overflowY: "auto", overflowX: "auto" }}>
         <DetailsList
           items={pagedItems.length > 0 ? pagedItems : [{} as IRequestItem]} // dummy row if no data
           columns={columns}
