@@ -192,18 +192,24 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       onRender: (item: IRequestItem) => {
         if (!item.Created) return "-";
 
-        // Parse the date
         const date = new Date(item.Created);
 
-        // Options for desired format: 30 - Dec - 2025
         const options: Intl.DateTimeFormatOptions = {
           day: "2-digit",
           month: "short",
           year: "numeric",
         };
 
-        // Format in English
-        return date.toLocaleDateString("en-GB", options).replace(/ /g, "  ");
+        const formatted = date
+          .toLocaleDateString("en-GB", options)
+          .replace(/ /g, " ");
+
+        // ONLY change direction if Arabic
+        return (
+          <span style={{ direction: isArabic ? "rtl" : "ltr" }}>
+            {formatted}
+          </span>
+        );
       },
     },
 
@@ -410,7 +416,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
           return false;
         });
       }
-     // console.log("DetailsPage", mappedItems[0].DetailsPage);
+      // console.log("DetailsPage", mappedItems[0].DetailsPage);
       setData(filteredItems);
       setCurrentPage(1);
     };
@@ -491,7 +497,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
             }
 
             const value = item[column.fieldName as keyof IRequestItem];
-           // console.log("DetailsPage > ", item["DetailsPage"]);
+            // console.log("DetailsPage > ", item["DetailsPage"]);
             // Custom render for Status
             if (column.key === "Status")
               return <StatusBadge status={value as string} />;
