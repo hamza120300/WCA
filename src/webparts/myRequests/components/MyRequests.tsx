@@ -112,11 +112,22 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       return pages;
     };
 
+    // const pageStyle = (isCurrent: boolean) => ({
+    //   margin: "0 6px",
+    //   cursor: isCurrent ? "default" : "pointer",
+    //   fontWeight: isCurrent ? 600 : 400,
+    //   color: isCurrent ? "#3aa272ff" : "#000",
+    // });
     const pageStyle = (isCurrent: boolean) => ({
-      margin: "0 6px",
+      display: "inline-block", // make numbers block-like
+      padding: "4px 8px", // space around number
+      margin: "0 4px",
       cursor: isCurrent ? "default" : "pointer",
       fontWeight: isCurrent ? 600 : 400,
-      color: isCurrent ? "#0078D4" : "#000",
+      color: isCurrent ? "#3aa272ff" : "#000",
+      borderBottom: isCurrent ? "2px solid #3aa272ff" : "2px solid transparent", // green underline
+      // borderRadius: "2px", // optional: small rounding
+      // textAlign: "center",
     });
 
     return (
@@ -171,8 +182,8 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       key: "ServiceType",
       name: isArabic ? "نوع الخدمة" : "Request Type",
       fieldName: "ServiceType",
-      minWidth: 100,
-      maxWidth: 120,
+      minWidth: 115,
+      maxWidth: 135,
       isResizable: true,
       isSorted: sortedColumn === "ServiceType",
       isSortedDescending: isSortedDescending,
@@ -206,7 +217,8 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
 
         // ONLY change direction if Arabic
         return (
-          <span style={{ direction: isArabic ? "rtl" : "ltr" }}>
+          // <span style={{ direction: isArabic ? "rtl" : "ltr" }}>
+          <span style={{ direction: "ltr", unicodeBidi: "isolate" }}>
             {formatted}
           </span>
         );
@@ -217,8 +229,8 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       key: "Status",
       name: isArabic ? "الحالة" : "Status",
       fieldName: "Status",
-      minWidth: 180,
-      maxWidth: 190,
+      minWidth: 80,
+      maxWidth: 90,
       isResizable: true,
       onRender: (item: IRequestItem) => (
         <StatusBadge status={item.Status} lang={isArabic ? "ar" : "en"} />
@@ -288,58 +300,6 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
     },
   ];
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     // Get current user
-  //     /*  const userResponse = await spHttpClient.get(
-  //       `${siteUrl}/_api/web/currentuser`,
-  //       SPHttpClient.configurations.v1
-  //     );
-  //     const currentUser = await userResponse.json();
-  //     const email = currentUser.Email;
-
-  //     const filter =
-  //       tab === "approval"
-  //         ? `AssignedTo/EMail eq '${email}'`
-  //         : `Author/EMail eq '${email}'`;*/
-
-  //     const groupsResponse = await spHttpClient.get(
-  //       `${siteUrl}/_api/web/currentuser/groups`,
-  //       SPHttpClient.configurations.v1
-  //     );
-  //     const groupsJson = await groupsResponse.json();
-  //     const userGroups = groupsJson.value.map((g: any) => g.Title);
-
-  //     const response = await spHttpClient.get(
-  //       `${siteUrl}/_api/web/lists/getbytitle('Requests')/items` +
-  //         `?$select=Id,RequestID,ServiceType/Title,ServiceType/Title_Ar,Status/Title,Status/Title_Ar,AssignedTo/Title,AssignedTo/EMail,Created` +
-  //         `&$expand=AssignedTo,Status,ServiceType` +
-  //         //`&$filter=${filter}` +
-  //         `&$orderby=Created desc`,
-  //       SPHttpClient.configurations.v1
-  //     );
-
-  //     const items = await response.json();
-  //     const mappedItems = items.value.map((item: any) => ({
-  //       id: item.Id,
-  //       RequestID: item.RequestID,
-  //       ServiceType: item.ServiceType
-  //         ? isArabic
-  //           ? item.ServiceType.Title_Ar
-  //           : item.ServiceType.Title
-  //         : "",
-  //       Status: item.Status ? item.Status.Title : "", // ALWAYS English
-  //       AssignedTo: item.AssignedTo ? item.AssignedTo.Title : "",
-  //       AssignedToEmail: item.AssignedTo?.EMail || "",
-  //       Created: item.Created,
-  //     }));
-
-  //     setData(mappedItems);
-  //     setCurrentPage(1); // reset to first page when tab changes
-  //   };
-
-  //   fetchData();
-  // }, [spHttpClient, siteUrl, tab]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -377,7 +337,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
 
       const response = await spHttpClient.get(
         `${siteUrl}/_api/web/lists/getbytitle('Requests')/items` +
-          `?$select=Id,RequestID,Author/EMail,ServiceType/DetailsPage,ServiceType/Title,ServiceType/Title_Ar,Status/SummarizedTitle,Status/SummarizedTitle_Ar,AssignedTo/Title,AssignedTo/EMail,Created` +
+          `?$select=Id,RequestID,Author/EMail,ServiceType/DetailsPage,ServiceType/Title,ServiceType/Title_Ar,Status/StatusSummary,Status/StatusSummary_Ar,AssignedTo/Title,AssignedTo/EMail,Created` +
           `&$expand=AssignedTo,Status,ServiceType,Author` +
           `&$orderby=Created desc`,
         SPHttpClient.configurations.v1
@@ -395,7 +355,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
             ? item.ServiceType.Title_Ar
             : item.ServiceType.Title
           : "",
-        Status: item.Status ? item.Status.SummarizedTitle : "",
+        Status: item.Status ? item.Status.StatusSummary : "",
         AssignedTo: item.AssignedTo ? item.AssignedTo.Title : "",
         AssignedToEmail: item.AssignedTo?.EMail || "",
         AuthorEmail: item.Author?.EMail || "",
