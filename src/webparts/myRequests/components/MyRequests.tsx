@@ -299,8 +299,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       ),
     },
   ];
-
-
+  //  //  "https://ejadasharepoint.sharepoint.com/sites/WCA-DEV/_layouts/15/workbench.aspx"
   useEffect(() => {
     const fetchData = async () => {
       //fetch from Configurations
@@ -436,38 +435,28 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
         ))}
       </Pivot>
 
-      {/* Table */}
+      {/* Table + Header */}
       <div style={{ height: "100%", overflowY: "auto", overflowX: "auto" }}>
         <DetailsList
-          items={pagedItems.length > 0 ? pagedItems : [{} as IRequestItem]} // dummy row if no data
+          items={pagedItems.length === 0 ? [] : pagedItems}
           columns={columns}
           selectionMode={SelectionMode.none}
           layoutMode={DetailsListLayoutMode.fixedColumns}
           isHeaderVisible={true}
+          onRenderMissingItem={() => null} // prevents SharePoint from rendering empty row
           onRenderItemColumn={(item, index, column) => {
             if (!column) return null;
 
-            // Show "No data found" if pagedItems is empty
-            if (pagedItems.length === 0) {
-              return column.key === "ServiceType" ? (
-                <span style={{ fontStyle: "italic", color: "#666" }}>
-                  No data found
-                </span>
-              ) : null;
-            }
-
             const value = item[column.fieldName as keyof IRequestItem];
-            // console.log("DetailsPage > ", item["DetailsPage"]);
-            // Custom render for Status
+
             if (column.key === "Status")
               return <StatusBadge status={value as string} />;
 
-            // Custom render for Actions
             if (column.key === "Actions")
               return (
                 <ActionButton
                   onClick={() => {
-                    const encodedRequestId = btoa(item.RequestID); // encode RequestID
+                    const encodedRequestId = btoa(item.RequestID);
                     window.open(
                       `${detailsRootURL}${item.DetailsPage}?requestId=${encodedRequestId}`,
                       "_blank"
@@ -480,6 +469,27 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
           }}
         />
       </div>
+
+      {/* Empty State BELOW HEADERS */}
+      {pagedItems.length === 0 && (
+        <div
+          style={{
+            textAlign: "center",
+            padding: "60px 0",
+            color: "#555",
+          }}
+        >
+          <img
+            src={require("../assets/noRequests.svg")}
+            alt="No Requests"
+            style={{ width: 140, opacity: 0.95 }}
+          />
+          <div style={{ marginTop: 16, fontSize: 16 }}>
+            You don’t have any request
+          </div>
+        </div>
+      )}
+
       {/* Pagination */}
       {data.length > pageSize && (
         <Pagination
