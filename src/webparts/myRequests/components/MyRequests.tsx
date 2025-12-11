@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { SPHttpClient } from "@microsoft/sp-http";
 import { Text } from "@fluentui/react";
 import styles from "./MyRequests.module.scss";
+import { Spinner, SpinnerSize } from "@fluentui/react";
 
 //, DefaultButton // start add arrow
 
@@ -55,6 +56,8 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
   const [isSortedDescending, setIsSortedDescending] = useState<
     boolean | undefined
   >();
+  const [loading, setLoading] = useState(true);
+  //const [loaded, setLoaded] = useState(false);
 
   const onColumnClick = (
     ev: React.MouseEvent<HTMLElement>,
@@ -302,84 +305,91 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
   //  //  "https://ejadasharepoint.sharepoint.com/sites/WCA-DEV/_layouts/15/workbench.aspx"
   useEffect(() => {
     const fetchData = async () => {
-      //fetch from Configurations
-      const configsResponse = await spHttpClient.get(
-        `${siteUrl}/_api/web/lists/getbytitle('Configurations')/items?$select=Title,Value`,
-        SPHttpClient.configurations.v1
-      );
-      const configsJson = await configsResponse.json();
+      setLoading(true);
+      // setLoaded(false);
+      try {
+        //fetch from Configurations
+        const configsResponse = await spHttpClient.get(
+          `${siteUrl}/_api/web/lists/getbytitle('Configurations')/items?$select=Title,Value`,
+          SPHttpClient.configurations.v1
+        );
+        const configsJson = await configsResponse.json();
 
-      let root = "";
-      configsJson.value.forEach((cfg: any) => {
-        if (cfg.Title === "DetailsRootURL") root = cfg.Value || "";
-      });
-
-      setDetailsRootURL(root);
-
-      // Get current user
-      const userResponse = await spHttpClient.get(
-        `${siteUrl}/_api/web/currentuser`,
-        SPHttpClient.configurations.v1
-      );
-      const currentUser = await userResponse.json();
-      const email = currentUser.Email.toLowerCase();
-
-      const groupsResponse = await spHttpClient.get(
-        `${siteUrl}/_api/web/currentuser/groups`,
-        SPHttpClient.configurations.v1
-      );
-      const groupsJson = await groupsResponse.json();
-
-      const userGroups: string[] = (groupsJson.value || []).map((g: any) =>
-        String(g.Title || "")
-      );
-
-      const response = await spHttpClient.get(
-        `${siteUrl}/_api/web/lists/getbytitle('Requests')/items` +
-          `?$select=Id,RequestID,Author/EMail,ServiceType/DetailsPage,ServiceType/Title,ServiceType/Title_Ar,Status/StatusSummary,Status/StatusSummary_Ar,AssignedTo/Title,AssignedTo/EMail,Created` +
-          `&$expand=AssignedTo,Status,ServiceType,Author` +
-          `&$orderby=Created desc`,
-        SPHttpClient.configurations.v1
-      );
-
-      const items = await response.json();
-
-      //   const mappedItems = items.value.map((item: any) => ({
-      const mappedItems = (items.value || []).map((item: any) => ({
-        id: item.Id,
-        RequestID: item.RequestID,
-        DetailsPage: item.ServiceType?.DetailsPage || "",
-        ServiceType: item.ServiceType
-          ? isArabic
-            ? item.ServiceType.Title_Ar
-            : item.ServiceType.Title
-          : "",
-        Status: item.Status ? item.Status.StatusSummary : "",
-        AssignedTo: item.AssignedTo ? item.AssignedTo.Title : "",
-        AssignedToEmail: item.AssignedTo?.EMail || "",
-        AuthorEmail: item.Author?.EMail || "",
-        Created: item.Created,
-      }));
-      //console.log("DetailsPage", mappedItems[0].DetailsPage);
-      let filteredItems: IRequestItem[] = [];
-
-      if (tab === "my") {
-        filteredItems = mappedItems.filter((mi: any) => {
-          return (mi.AuthorEmail || "").toLowerCase() === email;
+        let root = "";
+        configsJson.value.forEach((cfg: any) => {
+          if (cfg.Title === "DetailsRootURL") root = cfg.Value || "";
         });
-      } else {
-        filteredItems = mappedItems.filter((mi: any) => {
-          if ((mi.AssignedToEmail || "").toLowerCase() === email) return true;
-          if (mi.AssignedTo && userGroups.indexOf(mi.AssignedTo) !== -1)
-            return true;
-          return false;
-        });
+
+        setDetailsRootURL(root);
+
+        // Get current user
+        const userResponse = await spHttpClient.get(
+          `${siteUrl}/_api/web/currentuser`,
+          SPHttpClient.configurations.v1
+        );
+        const currentUser = await userResponse.json();
+        const email = currentUser.Email.toLowerCase();
+
+        const groupsResponse = await spHttpClient.get(
+          `${siteUrl}/_api/web/currentuser/groups`,
+          SPHttpClient.configurations.v1
+        );
+        const groupsJson = await groupsResponse.json();
+
+        const userGroups: string[] = (groupsJson.value || []).map((g: any) =>
+          String(g.Title || "")
+        );
+
+        const response = await spHttpClient.get(
+          `${siteUrl}/_api/web/lists/getbytitle('Requests')/items` +
+            `?$select=Id,RequestID,Author/EMail,ServiceType/DetailsPage,ServiceType/Title,ServiceType/Title_Ar,Status/StatusSummary,Status/StatusSummary_Ar,AssignedTo/Title,AssignedTo/EMail,Created` +
+            `&$expand=AssignedTo,Status,ServiceType,Author` +
+            `&$orderby=Created desc`,
+          SPHttpClient.configurations.v1
+        );
+
+        const items = await response.json();
+
+        //   const mappedItems = items.value.map((item: any) => ({
+        const mappedItems = (items.value || []).map((item: any) => ({
+          id: item.Id,
+          RequestID: item.RequestID,
+          DetailsPage: item.ServiceType?.DetailsPage || "",
+          ServiceType: item.ServiceType
+            ? isArabic
+              ? item.ServiceType.Title_Ar
+              : item.ServiceType.Title
+            : "",
+          Status: item.Status ? item.Status.StatusSummary : "",
+          AssignedTo: item.AssignedTo ? item.AssignedTo.Title : "",
+          AssignedToEmail: item.AssignedTo?.EMail || "",
+          AuthorEmail: item.Author?.EMail || "",
+          Created: item.Created,
+        }));
+        //console.log("DetailsPage", mappedItems[0].DetailsPage);
+        let filteredItems: IRequestItem[] = [];
+
+        if (tab === "my") {
+          filteredItems = mappedItems.filter((mi: any) => {
+            return (mi.AuthorEmail || "").toLowerCase() === email;
+          });
+        } else {
+          filteredItems = mappedItems.filter((mi: any) => {
+            if ((mi.AssignedToEmail || "").toLowerCase() === email) return true;
+            if (mi.AssignedTo && userGroups.indexOf(mi.AssignedTo) !== -1)
+              return true;
+            return false;
+          });
+        }
+
+        setData(filteredItems);
+        setCurrentPage(1);
+      } finally {
+        setLoading(false);
+        //  setLoaded(true);
       }
-      // console.log("DetailsPage", mappedItems[0].DetailsPage);
-      setData(filteredItems);
-      setCurrentPage(1);
     };
-    //console.log("DetailsPage", items[0].DetailsPage);
+
     fetchData();
   }, [spHttpClient, siteUrl, tab]);
 
@@ -469,9 +479,21 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
           }}
         />
       </div>
+      {/* Loading Spinner loading */}
+      {loading && pagedItems.length === 0 && (
+        <div
+          style={{ textAlign: "center", padding: "40px 0", color: "#CAF0CC" }}
+        >
+          <Spinner
+            size={SpinnerSize.large}
+            label="Loading..."
+            //  labelClassName="spinner-label-green"
+          />
+        </div>
+      )}
 
       {/* Empty State BELOW HEADERS */}
-      {pagedItems.length === 0 && (
+      {!loading && pagedItems.length === 0 && (
         <div
           style={{
             textAlign: "center",
