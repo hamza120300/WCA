@@ -3,8 +3,9 @@ import * as ReactDom from "react-dom";
 import { Version } from "@microsoft/sp-core-library";
 import {
   type IPropertyPaneConfiguration,
- // PropertyPaneTextField,
+  // PropertyPaneTextField,
   PropertyPaneDropdown,
+  PropertyPaneToggle,
 } from "@microsoft/sp-property-pane";
 import { BaseClientSideWebPart } from "@microsoft/sp-webpart-base";
 import { IReadonlyTheme } from "@microsoft/sp-component-base";
@@ -17,22 +18,32 @@ import { MyRequests } from "./components/MyRequests"; // notice we use named exp
 export interface IMyRequestsWebPartProps {
   description: string;
   mode: string; // "my" or "approval"
+  showServiceType: boolean;
+  showCreated: boolean;
+  showStatus: boolean;
+  showAssignedTo: boolean;
+  showActions: boolean;
 }
 
 export default class MyRequestsWebPart extends BaseClientSideWebPart<IMyRequestsWebPartProps> {
- 
+  public render(): void {
+    const initialTab: "my" | "approval" =
+      this.properties.mode === "approval" ? "approval" : "my";
+    const element = React.createElement(MyRequests, {
+      spHttpClient: this.context.spHttpClient,
+      siteUrl: this.context.pageContext.web.absoluteUrl,
+      defaultMode: initialTab, // pass initial tab
+      columnVisibility: {
+        serviceType: this.properties.showServiceType !== false,
+        created: this.properties.showCreated !== false,
+        status: this.properties.showStatus !== false,
+        assignedTo: this.properties.showAssignedTo !== false,
+        actions: this.properties.showActions !== false,
+      },
+    });
 
- public render(): void {
-  const initialTab: "my" | "approval" =
-  this.properties.mode === "approval" ? "approval" : "my";
-  const element = React.createElement(MyRequests, {
-    spHttpClient: this.context.spHttpClient,
-    siteUrl: this.context.pageContext.web.absoluteUrl,
-    defaultMode: initialTab, // pass initial tab
-  });
-
-  ReactDom.render(element, this.domElement);
-}
+    ReactDom.render(element, this.domElement);
+  }
 
   protected onInit(): Promise<void> {
     return this._getEnvironmentMessage().then((message) => {
@@ -107,7 +118,6 @@ export default class MyRequestsWebPart extends BaseClientSideWebPart<IMyRequests
   protected get dataVersion(): Version {
     return Version.parse("1.0");
   }
-
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
     return {
       pages: [
@@ -123,6 +133,36 @@ export default class MyRequestsWebPart extends BaseClientSideWebPart<IMyRequests
                     { key: "my", text: "My Requests" },
                     { key: "approval", text: "My Approvals" },
                   ],
+                }),
+              ],
+            },
+            {
+              groupName: "Column Visibility",
+              groupFields: [
+                PropertyPaneToggle("showServiceType", {
+                  label: "Show Service Type",
+                  onText: "Shown",
+                  offText: "Hidden",
+                }),
+                PropertyPaneToggle("showCreated", {
+                  label: "Show Created Date",
+                  onText: "Shown",
+                  offText: "Hidden",
+                }),
+                PropertyPaneToggle("showStatus", {
+                  label: "Show Status",
+                  onText: "Shown",
+                  offText: "Hidden",
+                }),
+                PropertyPaneToggle("showAssignedTo", {
+                  label: "Show Assigned To",
+                  onText: "Shown",
+                  offText: "Hidden",
+                }),
+                PropertyPaneToggle("showActions", {
+                  label: "Show Actions",
+                  onText: "Shown",
+                  offText: "Hidden",
                 }),
               ],
             },

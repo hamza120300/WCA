@@ -23,6 +23,13 @@ interface IMyRequestsProps {
   spHttpClient: SPHttpClient;
   siteUrl: string;
   defaultMode?: "my" | "approval"; // optional, from property pane
+  columnVisibility?: {
+    serviceType?: boolean;
+    created?: boolean;
+    status?: boolean;
+    assignedTo?: boolean;
+    actions?: boolean;
+  };
 }
 
 const isArabic =
@@ -48,6 +55,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
   spHttpClient,
   siteUrl,
   defaultMode,
+  columnVisibility = {},
 }) => {
   const [tab, setTab] = useState<"my" | "approval">(defaultMode || "my");
   const [detailsRootURL, setDetailsRootURL] = React.useState("");
@@ -115,12 +123,6 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
       return pages;
     };
 
-    // const pageStyle = (isCurrent: boolean) => ({
-    //   margin: "0 6px",
-    //   cursor: isCurrent ? "default" : "pointer",
-    //   fontWeight: isCurrent ? 600 : 400,
-    //   color: isCurrent ? "#3aa272ff" : "#000",
-    // });
     const pageStyle = (isCurrent: boolean) => ({
       display: "inline-block", // make numbers block-like
       padding: "4px 8px", // space around number
@@ -179,129 +181,182 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
     );
   };
 
+  // const renderRow = (props: any) => {
+  //   if (!props) return null;
+
+  //   const item: IRequestItem = props.item;
+
+  //   // Only make row clickable if Actions column is hidden
+  //   if (!columnVisibility.actions && item) {
+  //     const encodedRequestId = btoa(item.RequestID);
+  //     const url = `${detailsRootURL}${
+  //       item.DetailsPage
+  //     }?requestId=${encodedRequestId}${isArabic ? "&locale=ar-sa" : ""}`;
+
+  //     return (
+  //       <div
+  //         {...props}
+  //         style={{ cursor: "pointer" }}
+  //         onClick={() => window.open(url, "_blank")}
+  //       />
+  //     );
+  //   }
+
+  //   return <div {...props} />;
+  // };
+
   // Columns for Fluent UI DetailsList
-  const columns: IColumn[] = [
-    {
-      key: "ServiceType",
-      name: isArabic ? "نوع الخدمة" : "Request Type",
-      fieldName: "ServiceType",
-      minWidth: 115,
-      maxWidth: 135,
-      isResizable: true,
-      isSorted: sortedColumn === "ServiceType",
-      isSortedDescending: isSortedDescending,
-      onColumnClick: onColumnClick,
+  // Define columns based on visibility settings h
+  // const serviceTypeColumn: IColumn = {
+  //   key: "ServiceType",
+  //   name: isArabic ? "نوع الخدمة" : "Request Type",
+  //   fieldName: "ServiceType",
+  //   minWidth: columnVisibility.assignedTo ? 115 : 270,
+  //   maxWidth: columnVisibility.assignedTo ? 135 : 310,
+  //   isResizable: true,
+  //   isSorted: sortedColumn === "ServiceType",
+  //   isSortedDescending: isSortedDescending,
+  //   onColumnClick: onColumnClick,
+  // };
+  const serviceTypeColumn: IColumn = {
+    key: "ServiceType",
+    name: isArabic ? "نوع الخدمة" : "Request Type",
+    fieldName: "ServiceType",
+    minWidth: columnVisibility.assignedTo ? 115 : 270,
+    maxWidth: columnVisibility.assignedTo ? 135 : 310,
+    isResizable: true,
+    isSorted: sortedColumn === "ServiceType",
+    isSortedDescending: isSortedDescending,
+    onColumnClick: onColumnClick,
+
+    onRender: (item: IRequestItem) => {
+      // If Actions is hidden → make ServiceType clickable
+      if (!columnVisibility.actions) {
+        const encodedRequestId = btoa(item.RequestID);
+        const url = `${detailsRootURL}${
+          item.DetailsPage
+        }?requestId=${encodedRequestId}${isArabic ? "&locale=ar-sa" : ""}`;
+
+        return (
+          <span
+            style={{
+              // color: "#0078d4",
+              cursor: "pointer",
+              // textDecoration: "underline",
+            }}
+            onClick={() => window.open(url, "_blank")}
+          >
+            {item.ServiceType}
+          </span>
+        );
+      }
+
+      // Default (normal text)
+      return <span>{item.ServiceType}</span>;
     },
+  };
 
-    {
-      key: "Created",
-      name: isArabic ? "تاريخ الإنشاء" : "Created Date",
-      fieldName: "Created",
-      minWidth: 80,
-      maxWidth: 100,
-      isResizable: true,
-      isSorted: sortedColumn === "Created",
-      isSortedDescending: isSortedDescending,
-      onColumnClick: onColumnClick,
-      onRender: (item: IRequestItem) => {
-        if (!item.Created) return "-";
+  const createdColumn: IColumn = {
+    key: "Created",
+    name: isArabic ? "تاريخ الإنشاء" : "Created Date",
+    fieldName: "Created",
+    // minWidth: 80,
+    //maxWidth: 100,
+    minWidth: columnVisibility.assignedTo ? 80 : 200,
+    maxWidth: columnVisibility.assignedTo ? 100 : 220,
+    isResizable: true,
+    isSorted: sortedColumn === "Created",
+    isSortedDescending: isSortedDescending,
+    onColumnClick: onColumnClick,
+    onRender: (item: IRequestItem) => {
+      if (!item.Created) return "-";
 
-        const date = new Date(item.Created);
-
-        const options: Intl.DateTimeFormatOptions = {
+      const formatted = new Date(item.Created)
+        .toLocaleDateString("en-GB", {
           day: "2-digit",
           month: "short",
           year: "numeric",
-        };
+        })
+        .replace(/ /g, " ");
 
-        const formatted = date
-          .toLocaleDateString("en-GB", options)
-          .replace(/ /g, " ");
-
-        // ONLY change direction if Arabic
-        return (
-          // <span style={{ direction: isArabic ? "rtl" : "ltr" }}>
-          <span style={{ direction: "ltr", unicodeBidi: "isolate" }}>
-            {formatted}
-          </span>
-        );
-      },
+      return (
+        <span style={{ direction: "ltr", unicodeBidi: "isolate" }}>
+          {formatted}
+        </span>
+      );
     },
+  };
 
-    {
-      key: "Status",
-      name: isArabic ? "الحالة" : "Status",
-      fieldName: "Status",
-      minWidth: 80,
-      maxWidth: 90,
-      isResizable: true,
-      onRender: (item: IRequestItem) => (
-        <StatusBadge status={item.Status} lang={isArabic ? "ar" : "en"} />
-      ),
-      isSorted: sortedColumn === "Status",
-      isSortedDescending: isSortedDescending,
-      onColumnClick: onColumnClick,
+  const statusColumn: IColumn = {
+    key: "Status",
+    name: isArabic ? "الحالة" : "Status",
+    fieldName: "Status",
+    minWidth: 80,
+    maxWidth: 90,
+    isResizable: true,
+    onRender: (item: IRequestItem) => (
+      <StatusBadge status={item.Status} lang={isArabic ? "ar" : "en"} />
+    ),
+    isSorted: sortedColumn === "Status",
+    isSortedDescending: isSortedDescending,
+    onColumnClick: onColumnClick,
+  };
+
+  const assignedToColumn: IColumn = {
+    key: "AssignedTo",
+    name: isArabic ? "الجهة المكلفة بالموافقة" : "Assigned Approver",
+    fieldName: "AssignedTo",
+    minWidth: 150,
+    maxWidth: 200,
+    isResizable: true,
+    onRender: (item: IRequestItem) => {
+      if (!item.AssignedTo) return "-";
+
+      return (
+        <div
+          className={styles["person-pill"]}
+          style={{ flexDirection: isArabic ? "row-reverse" : "row" }}
+        >
+          <img
+            src={getUserPhoto(item.AssignedToEmail || "")}
+            alt={item.AssignedTo}
+            className="personDisplayCoin_d125512b"
+          />
+          <span className="personDisplayName_d125512b">{item.AssignedTo}</span>
+        </div>
+      );
     },
+  };
 
-    {
-      key: "AssignedTo",
-      name: isArabic ? "الجهة المكلفة بالموافقة" : "Assigned Approver",
-      fieldName: "AssignedTo",
-      minWidth: 150,
-      maxWidth: 200,
-      isResizable: true,
-      onRender: (item: IRequestItem) => {
-        if (!item.AssignedTo) return "-";
+  const actionsColumn: IColumn = {
+    key: "Actions",
+    name: isArabic ? "الإجراءات" : "Actions",
+    minWidth: 60,
+    maxWidth: 60,
+    isResizable: false,
+    onRender: (item: IRequestItem) => (
+      <ActionButton
+        onClick={() => {
+          const encodedRequestId = btoa(item.RequestID);
+          window.open(
+            `${detailsRootURL}${
+              item.DetailsPage
+            }?requestId=${encodedRequestId}${isArabic ? "&locale=ar-sa" : ""}`,
+            "_blank"
+          );
+        }}
+      />
+    ),
+  };
 
-        return (
-          <div
-            className={styles["person-pill"]}
-            style={{ flexDirection: isArabic ? "row-reverse" : "row" }}
-          >
-            <img
-              src={getUserPhoto(item.AssignedToEmail || "")}
-              alt={item.AssignedTo}
-              className="personDisplayCoin_d125512b"
-            />
-            <span className="personDisplayName_d125512b">
-              {item.AssignedTo}
-            </span>
-          </div>
-        );
-      },
-    },
+  const columns: IColumn[] = [];
 
-    {
-      key: "Actions",
-      name: isArabic ? "الإجراءات" : "Actions",
-      minWidth: 60,
-      maxWidth: 60,
-      isResizable: false,
-      onRender: (item: IRequestItem) => (
-        // <ActionButton
-        //   onClick={() =>
-        //     window.open(
-        //       `${siteUrl}/Lists/Requests/DispForm.aspx?ID=${item.id}`,
-        //       "_blank"
-        //     )
-        //   }
-        // />
-        <ActionButton
-          onClick={() => {
-            const encodedRequestId = btoa(item.RequestID); // encode RequestID
-            window.open(
-              `${detailsRootURL}${
-                item.DetailsPage
-              }?requestId=${encodedRequestId}${
-                isArabic ? "&locale=ar-sa" : ""
-              }`,
-              "_blank"
-            );
-          }}
-        />
-      ),
-    },
-  ];
+  if (columnVisibility.serviceType) columns.push(serviceTypeColumn);
+  if (columnVisibility.created) columns.push(createdColumn);
+  if (columnVisibility.status) columns.push(statusColumn);
+  if (columnVisibility.assignedTo) columns.push(assignedToColumn);
+  if (columnVisibility.actions) columns.push(actionsColumn);
+  // Apply column visibility from props
   //  //  "https://ejadasharepoint.sharepoint.com/sites/WCA-DEV/_layouts/15/workbench.aspx"
   useEffect(() => {
     const fetchData = async () => {
@@ -342,7 +397,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
 
         const response = await spHttpClient.get(
           `${siteUrl}/_api/web/lists/getbytitle('Requests')/items` +
-            `?$select=Id,RequestID,Author/EMail,ServiceType/DetailsPage,ServiceType/Title,ServiceType/Title_Ar,Status/StatusSummary,Status/StatusSummary_Ar,AssignedTo/Title,AssignedTo/EMail,Created` +
+            `?$select=Id,RequestID,Requestor,Author/EMail,ServiceType/DetailsPage,ServiceType/Title,ServiceType/Title_Ar,Status/StatusSummary,Status/StatusSummary_Ar,AssignedTo/Title,AssignedTo/EMail,Created` +
             `&$expand=AssignedTo,Status,ServiceType,Author` +
             `&$orderby=Created desc`,
           SPHttpClient.configurations.v1
@@ -365,13 +420,14 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
           AssignedToEmail: item.AssignedTo?.EMail || "",
           AuthorEmail: item.Author?.EMail || "",
           Created: item.Created,
+          Requestor: item.Requestor || "",
         }));
-        //console.log("DetailsPage", mappedItems[0].DetailsPage);
+        console.log("DetailsPage", mappedItems[0].Requestor);
         let filteredItems: IRequestItem[] = [];
 
         if (tab === "my") {
           filteredItems = mappedItems.filter((mi: any) => {
-            return (mi.AuthorEmail || "").toLowerCase() === email;
+            return (mi.Requestor || "").toLowerCase() === email;
           });
         } else {
           filteredItems = mappedItems.filter((mi: any) => {
@@ -454,6 +510,7 @@ export const MyRequests: React.FC<IMyRequestsProps> = ({
           layoutMode={DetailsListLayoutMode.fixedColumns}
           isHeaderVisible={true}
           onRenderMissingItem={() => null} // prevents SharePoint from rendering empty row
+          //  onRenderRow={renderRow}
           onRenderItemColumn={(item, index, column) => {
             if (!column) return null;
 
